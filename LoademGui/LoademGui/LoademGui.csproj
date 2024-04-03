@@ -10,8 +10,14 @@
 		<ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<AssemblyVersion>1.0.1.$([System.DateTime]::UtcNow.ToString(MddHH))</AssemblyVersion>
+		<FileVersion>1.0.1.$([System.DateTime]::UtcNow.ToString(MddHH))</FileVersion>
+		<InformationalVersion>1.0.1.$([System.DateTime]::UtcNow.ToString(MddHH))</InformationalVersion>
+	</PropertyGroup>
+
 	<ItemGroup>
-	  <None Update="loadem\loadem.exe">
+	  <None Update="loadem\loadem_forgui.exe">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>

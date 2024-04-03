@@ -1,3 +1,6 @@
+
+using System.Reflection;
+
 namespace LoademGui
 {
 	public partial class MainForm : Form
@@ -11,7 +14,7 @@ namespace LoademGui
 
 			if (Environment.MachineName == "ABAKULA")
 			{
-				inputUrls.Lines = new string[] 
+				inputUrls.Lines = new string[]
 				{
 					"http://dev-default-ut.wem.local/",
 					"http://dev-default-ut.wem.local/sokovi",
@@ -19,6 +22,18 @@ namespace LoademGui
 					"http://dev-default-ut.wem.local/koza"
 				};
 			}
+
+			this.Text = $"Loadem GUI v{GetApplicationVersion()}";
+		}
+
+		public string GetApplicationVersion()
+		{
+			string? version = typeof(MainForm).Assembly
+				.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+				.InformationalVersion.Split('+')
+				.First();
+
+			return version ?? "N/A";
 		}
 
 		private bool DataReceivedHandler(string url, int clientId, string? data)
@@ -42,8 +57,9 @@ namespace LoademGui
 			}
 
 			var textBox = LogTextBoxes[clientId];
-			Invoke(new MethodInvoker(delegate () {
-				textBox.AppendText(Environment.NewLine + logline);
+			Invoke(new System.Windows.Forms.MethodInvoker(delegate ()
+			{
+				textBox.AppendText(logline + Environment.NewLine);
 			}));
 
 			return true;
@@ -54,7 +70,6 @@ namespace LoademGui
 			foreach (var textBox in LogTextBoxes)
 			{
 				panelRunnerLogs.Controls.Remove(textBox);
-				textBox.Dispose();
 			}
 			LogTextBoxes.Clear();
 
@@ -82,7 +97,7 @@ namespace LoademGui
 			foreach (var url in urls)
 			{
 				var tb = new TextBox();
-				tb.Font = new Font("Cascadia Code", fontSizeDict[urls.Count]);
+				tb.Font = new Font("Segoe UI", fontSizeDict[urls.Count]);
 				tb.Multiline = true;
 				tb.Dock = DockStyle.Left;
 				tb.Width = panelRunnerLogs.ClientRectangle.Width / urls.Count;
@@ -118,6 +133,14 @@ namespace LoademGui
 			}
 			buttonStart.Enabled = true;
 			buttonStop.Enabled = false;
+		}
+
+		private void panelRunnerLogs_SizeChanged(object sender, EventArgs e)
+		{
+			foreach (var tb in LogTextBoxes)
+			{
+				tb.Width = panelRunnerLogs.ClientRectangle.Width / LogTextBoxes.Count;
+			}
 		}
 	}
 }

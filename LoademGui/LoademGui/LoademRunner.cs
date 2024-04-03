@@ -10,13 +10,16 @@ namespace LoademGui
 {
 	public class LoademRunner
 	{
+		public const string LoademExeFolder = "loadem";	
+		public const string LoademExe = "loadem_forgui.exe";
+
 		public List<string> UrlList { get; set; } = new List<string>();
 		public int Clients { get; set; } = 5;
 		public int TimeLimitInSeconds { get; set; } = 0;
 
 		public Func<string, int, string?, bool> DataReceived { get; set; } = default!;
 
-		protected CancellationTokenSource CancellationTokenSource { get; set; } = default!;
+		protected CancellationTokenSource? CancellationTokenSource { get; set; } = null;
 		protected List<Process> StartedList { get; set; } = new List<Process>();
 
 
@@ -83,6 +86,37 @@ namespace LoademGui
 			if (CancellationTokenSource != null)
 			{
 				CancellationTokenSource.Cancel();
+				CancellationTokenSource = null;
+			}
+
+			// check if all processes are gone			
+			var zombies = GetZombieProcesses();
+			if (zombies.Any())
+			{
+				// first try to send ctrl+c again
+				KillZombies(true);
+				// wait a bit
+				Thread.Sleep(50 * zombies.Count);
+				// kill them if any are still alive
+				KillZombies(true);
+			}
+		}
+
+		private List<Process> GetZombieProcesses()
+		{
+			string procName = LoademExe.Replace(".exe", "");
+			return Process.GetProcesses().Where(p => p.ProcessName == procName).ToList();
+		}
+
+		private void KillZombies(bool tryCtrlC)
+		{
+			var zombies = GetZombieProcesses();
+			if (zombies.Any())
+			{
+				foreach (var zombie in zombies)
+				{
+					zombie.Kill();
+				}
 			}
 		}
 
@@ -111,7 +145,7 @@ namespace LoademGui
 
 		private async Task RunInstance(LoademStart start, CancellationToken cancellationToken)
 		{
-			string loademExe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "loadem\\loadem.exe");
+			string lexe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LoademExeFolder, LoademExe);
 			string args = "";
 			if (TimeLimitInSeconds > 0)
 			{
@@ -119,7 +153,7 @@ namespace LoademGui
 			}
 			args += $"{start.Url} {Clients}";
 
-			var psi = new ProcessStartInfo(loademExe, args);
+			var psi = new ProcessStartInfo(lexe, args);
 			psi.UseShellExecute = false;
 			psi.RedirectStandardOutput = true;
 			psi.RedirectStandardError = true;

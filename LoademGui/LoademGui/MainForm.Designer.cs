@@ -157,6 +157,7 @@
 			this.panelRunnerLogs.Name = "panelRunnerLogs";
 			this.panelRunnerLogs.Size = new Size(730, 265);
 			this.panelRunnerLogs.TabIndex = 2;
+			this.panelRunnerLogs.SizeChanged += panelRunnerLogs_SizeChanged;
 			// 
 			// MainForm
 			// 
